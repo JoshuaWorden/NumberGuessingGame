@@ -1,0 +1,24 @@
+{
+  "states": [
+    {
+      "name": "Victoria",
+      "abbreviation": "N/A"
+    },
+    {
+      "name": "Queensland",
+      "abbreviation": "N/A"
+    },
+    {
+      "name": "South Australia",
+      "abbreviation": "N/A"
+    },
+    {
+      "name": "Western Australia",
+      "abbreviation": "N/A"
+    },
+    {
+      "name": "Northern Territory",
+      "abbreviation": "N/A"
+    }
+  ]
+}
