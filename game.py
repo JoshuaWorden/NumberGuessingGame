@@ -5,20 +5,23 @@ from score import DifficultyLevel
 import save_data
 
 class Game:
-    difficulty = None
-    scores = Score()
-    difficulty_data = None
-    answer = None
+    def __init__(self):
+        self.difficulty = None
+        self.scores = Score()
+        self.difficulty_data = None
+        self.answer = None
+        self.easy = self.scores.difficulties[DifficultyLevel.EASY]
+        self.medium = self.scores.difficulties[DifficultyLevel.MEDIUM]
+        self.hard = self.scores.difficulties[DifficultyLevel.HARD]
 
     def select_difficulty(self):
+        self.scores.current_score = 0 
+
         # Prompt the user to select a difficulty
         print("What difficulty would you like to play on?\n" \
-        f"1. Easy ({self.scores.difficulties[DifficultyLevel.EASY].lower_limit} - "
-        f"{self.scores.difficulties[DifficultyLevel.EASY].upper_limit})\n" 
-        f"2. Medium ({self.scores.difficulties[DifficultyLevel.MEDIUM].lower_limit} - "
-        f"{self.scores.difficulties[DifficultyLevel.MEDIUM].upper_limit})\n" 
-        f"3. Hard ({self.scores.difficulties[DifficultyLevel.HARD].lower_limit} - "
-        f"{self.scores.difficulties[DifficultyLevel.HARD].upper_limit})")
+        f"1. Easy ({self.easy.lower_limit} - {self.easy.upper_limit})\n" 
+        f"2. Medium ({self.medium.lower_limit} - {self.medium.upper_limit})\n" 
+        f"3. Hard ({self.hard.lower_limit} - {self.hard.upper_limit})")
         
         # If user input is valid, apply that difficulty
         try:
@@ -48,6 +51,8 @@ class Game:
             print("You must guess a number")
             self.player_guessing()
 
+        self.scores.current_score += 1
+
         if guess == self.answer:
             self.print_win_screen()
         
@@ -64,11 +69,10 @@ class Game:
         
         # Inform the user of whether the number they need to guess is higher or lower than what they guessed
         elif guess < self.answer:
-            self.scores.current_score += 1
+
             print("Higher!")
 
         elif guess > self.answer:
-            self.scores.current_score += 1
             print("Lower!")
         
         self.player_guessing()
@@ -78,7 +82,7 @@ class Game:
         print(f"It took you {self.scores.current_score} attempts to guess it")
         
         # Update the score for the difficulty, and if the player achieved a high score, inform the user
-        if self.scores.updaate_score_data(self.difficulty):
+        if self.scores.update_score_data(self.difficulty):
             print(f"Congratulations! "
                   f"{self.difficulty_data.best_score} is now your new best score on {self.difficulty}!")
         else:
@@ -95,10 +99,9 @@ class Game:
         choice = input()
 
         if choice == "Y" or choice == "y":
-            self.scores.current_score = 1 
             self.select_difficulty()
         elif choice == "N" or choice == "n":
-            quit()
+            self.print_main_menu_screen()
         else:
             print("Invalid response\n")
         self.print_play_again_screen()
@@ -123,10 +126,34 @@ class Game:
             case 1:
                 self.select_difficulty()
             case 2:
-                print("HIGH SCORES\n"
-                    "TO BE COMPLETED....")
+                self.print_high_score_screen()
+                self.print_main_menu_screen()
             case 3:
                 quit()
+
+    def print_high_score_screen(self):
+        # Width of the columns used for text alignment
+        key_width = 13 # Technically 17, minus the four spaces before column line
+        value_width = 12
+
+        # NOTE_TO_SELF: This is hard as shit to read compared to doing it all manually
+        #               Although techincally this is much easier to edit and scale differently later on if needed
+        print(
+        f"{'HIGH SCORES'.center(key_width+4 + value_width*3 + 4)}\n\n"
+        f"{'DIFFICULTY'.rjust(key_width)}    |{'EASY'.center(value_width)}|{'MEDIUM'.center(value_width)}|{'HARD'.center(value_width)}|\n"
+        f"{'-'.center(key_width+4, '-')}|{'-'.center(value_width, '-')}|{'-'.center(value_width, '-')}|{'-'.center(value_width, '-')}|\n"
+        f"{'BEST SCORE'.rjust(key_width)}    |{str(self.easy.best_score).center(value_width)}|"
+                          f"{str(self.medium.best_score).center(value_width)}|"
+                          f"{str(self.hard.best_score).center(value_width)}|\n" 
+        f"{'AVERAGE SCORE'.rjust(key_width)}    |{str(self.easy.get_average()).center(value_width)}|"
+                          f"{str(self.medium.get_average()).center(value_width)}|"
+                          f"{str(self.hard.get_average()).center(value_width)}|\n"
+        f"{'GAMES PLAYED'.rjust(key_width)}    |{str(self.easy.games_played).center(value_width)}|"
+                          f"{str(self.medium.games_played).center(value_width)}|"
+                          f"{str(self.hard.games_played).center(value_width)}|\n\n"
+        "Press any key to go back to the main menu")
+
+        input()
                 
     def load_save_data(self):
         saved_data = save_data.get_save_data()

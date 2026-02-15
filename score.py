@@ -7,7 +7,7 @@ class DifficultyLevel(Enum):
 
 class Difficulty:
     def __init__(self, lower_limit, upper_limit):
-        self.best_score = 1
+        self.best_score = 9999
         self.total_score = 0
         self.games_played = 0
         self.upper_limit = upper_limit
@@ -27,7 +27,7 @@ class Difficulty:
 
 class Score:
     def __init__(self):
-        self.current_score = 1
+        self.current_score = 0
 
         # Manage difficulties data by storing them in a dictionary, using enum as the key and the difficulty object as the value
         self.difficulties = {
@@ -40,7 +40,7 @@ class Score:
     def get_difficulty(self, current_difficulty):
         return self.difficulties[current_difficulty]
     
-    def updaate_score_data(self, current_difficulty):
+    def update_score_data(self, current_difficulty):
         self.difficulties[current_difficulty].games_played += 1
         self.difficulties[current_difficulty].update_total_score(self.current_score)
 
