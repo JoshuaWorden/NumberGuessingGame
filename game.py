@@ -1,5 +1,4 @@
 import random
-import json
 from score import Score
 from score import DifficultyLevel
 import save_data
@@ -10,28 +9,25 @@ class Game:
         self.scores = Score()
         self.difficulty_data = None
         self.answer = None
-        self.easy = self.scores.difficulties[DifficultyLevel.EASY]
-        self.medium = self.scores.difficulties[DifficultyLevel.MEDIUM]
-        self.hard = self.scores.difficulties[DifficultyLevel.HARD]
 
     def select_difficulty(self):
         self.scores.current_score = 0 
 
         # Prompt the user to select a difficulty
-        print("What difficulty would you like to play on?\n" \
-        f"1. Easy ({self.easy.lower_limit} - {self.easy.upper_limit})\n" 
-        f"2. Medium ({self.medium.lower_limit} - {self.medium.upper_limit})\n" 
-        f"3. Hard ({self.hard.lower_limit} - {self.hard.upper_limit})")
+        print("What difficulty would you like to play on?\n"
+        f"1. Easy ({self.scores.easy.lower_limit} - {self.scores.easy.upper_limit})\n" 
+        f"2. Medium ({self.scores.medium.lower_limit} - {self.scores.medium.upper_limit})\n" 
+        f"3. Hard ({self.scores.hard.lower_limit} - {self.scores.hard.upper_limit})")
         
         # If user input is valid, apply that difficulty
         try:
             self.difficulty = DifficultyLevel(int(input()))
-            self.difficulty_data = self.scores.get_difficulty(self.difficulty)
+            self.difficulty_data = self.scores.get_difficulties_obj(self.difficulty)
         # If user input is invalid, notify user and reprint options
         except ValueError:
             print("Invalid choice")
             self.select_difficulty()
-        
+
         # Determine the number to be guessed by the user
         self.answer = random.randint(self.difficulty_data.lower_limit, 
                                      self.difficulty_data.upper_limit)
@@ -88,8 +84,10 @@ class Game:
         else:
             print(f"Your current best is {self.difficulty_data.best_score}")
 
+        save_data.update_save_data(self.scores, self.difficulty)
+
         print(f"Your current average for {self.difficulty} is"
-              f" {self.difficulty_data.get_average()} guesses")
+              f" {self.difficulty_data.average_score} guesses")
 
         self.print_play_again_screen()
 
@@ -116,7 +114,7 @@ class Game:
         # Get user choice and make sure it's valid
         try:
             choice = int(input())
-            if choice < 1 and choice > 3:
+            if choice < 1 or choice > 3:
                 raise ValueError
         except ValueError:
             print("Invalid choice")
@@ -127,7 +125,6 @@ class Game:
                 self.select_difficulty()
             case 2:
                 self.print_high_score_screen()
-                self.print_main_menu_screen()
             case 3:
                 quit()
 
@@ -142,26 +139,40 @@ class Game:
         f"{'HIGH SCORES'.center(key_width+4 + value_width*3 + 4)}\n\n"
         f"{'DIFFICULTY'.rjust(key_width)}    |{'EASY'.center(value_width)}|{'MEDIUM'.center(value_width)}|{'HARD'.center(value_width)}|\n"
         f"{'-'.center(key_width+4, '-')}|{'-'.center(value_width, '-')}|{'-'.center(value_width, '-')}|{'-'.center(value_width, '-')}|\n"
-        f"{'BEST SCORE'.rjust(key_width)}    |{str(self.easy.best_score).center(value_width)}|"
-                          f"{str(self.medium.best_score).center(value_width)}|"
-                          f"{str(self.hard.best_score).center(value_width)}|\n" 
-        f"{'AVERAGE SCORE'.rjust(key_width)}    |{str(self.easy.get_average()).center(value_width)}|"
-                          f"{str(self.medium.get_average()).center(value_width)}|"
-                          f"{str(self.hard.get_average()).center(value_width)}|\n"
-        f"{'GAMES PLAYED'.rjust(key_width)}    |{str(self.easy.games_played).center(value_width)}|"
-                          f"{str(self.medium.games_played).center(value_width)}|"
-                          f"{str(self.hard.games_played).center(value_width)}|\n\n"
-        "Press any key to go back to the main menu")
+        f"{'BEST SCORE'.rjust(key_width)}    |{str(self.scores.easy.best_score).center(value_width)}|"
+                          f"{str(self.scores.medium.best_score).center(value_width)}|"
+                          f"{str(self.scores.hard.best_score).center(value_width)}|\n" 
+        f"{'AVERAGE SCORE'.rjust(key_width)}    |{str(self.scores.easy.average_score).center(value_width)}|"
+                          f"{str(self.scores.medium.average_score).center(value_width)}|"
+                          f"{str(self.scores.hard.average_score).center(value_width)}|\n"
+        f"{'GAMES PLAYED'.rjust(key_width)}    |{str(self.scores.easy.games_played).center(value_width)}|"
+                          f"{str(self.scores.medium.games_played).center(value_width)}|"
+                          f"{str(self.scores.hard.games_played).center(value_width)}|\n\n"
+        "0. Back\n"
+        "1. Reset ALL High Scores\n"
+        f"2. Reset EASY High Scores\n"
+        f"3. Reset MEDIUM High Scores\n"
+        f"4. Reset HARD High Scores")
 
-        input()
-                
-    def load_save_data(self):
-        saved_data = save_data.get_save_data()
+        choice = int(input())
+        self.scores.difficulties.keys
+        try:
+            if choice < 0 or choice > 4:
+                raise ValueError
+        except ValueError:
+            print("Invalid choice")
+            self.print_high_score_screen()
 
-        for key, value in saved_data["difficulties"].items():
-            # Simplify difficulty assigning by upper-casing key to match enum
-            difficulty = DifficultyLevel[key.upper()]
+        match choice:
+            case 0:
+                self.print_main_menu_screen()
+            case 1:
+                save_data.reset_save_data(self.scores)
+            case 2:
+                save_data.reset_single_difficulty_scores(self.scores, f"{DifficultyLevel.EASY.name}".lower())
+            case 3:
+                save_data.reset_single_difficulty_scores(self.scores, f"{DifficultyLevel.MEDIUM.name}".lower())
+            case 4:
+                save_data.reset_single_difficulty_scores(self.scores, f"{DifficultyLevel.HARD.name}".lower())
 
-            self.scores.difficulties[difficulty].best_score = value["best_score"]
-            self.scores.difficulties[difficulty].total_score = value["total_score"]
-            self.scores.difficulties[difficulty].games_played = value["games_played"]
+        self.print_high_score_screen()

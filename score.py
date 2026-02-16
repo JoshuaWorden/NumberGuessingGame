@@ -1,4 +1,5 @@
 from enum import Enum
+import save_data
 
 class DifficultyLevel(Enum):
     EASY = 1
@@ -7,17 +8,18 @@ class DifficultyLevel(Enum):
 
 class Difficulty:
     def __init__(self, lower_limit, upper_limit):
-        self.best_score = 9999
-        self.total_score = 0
-        self.games_played = 0
+        self.best_score = None
+        self.total_score = None
+        self.games_played = None
         self.upper_limit = upper_limit
         self.lower_limit = lower_limit
     
-    def get_average(self):
+    @property
+    def average_score(self):
         if self.games_played == 0:
             return 0
         else:
-            return self.total_score / self.games_played
+            return round(self.total_score / self.games_played, 2)
         
     def update_total_score(self, current_score):
         self.total_score += current_score
@@ -36,8 +38,21 @@ class Score:
             DifficultyLevel.HARD: Difficulty(1, 10000)
         }
 
-    # This is purely to shorten the code to access current difficulty in game.py
-    def get_difficulty(self, current_difficulty):
+        save_data.load_save_data(self, DifficultyLevel)
+
+    # The @property makes the function get treated as a variable when calling
+    # For example instead of obj.get_easy(), you can just obj.easy. Much more concise and still very readable
+    @property
+    def easy(self): return self.difficulties[DifficultyLevel.EASY]
+
+    @property
+    def medium(self): return self.difficulties[DifficultyLevel.MEDIUM]
+
+    @property
+    def hard(self): return self.difficulties[DifficultyLevel.HARD]
+
+    # Get self.difficulties object of the current difficulty
+    def get_difficulties_obj(self, current_difficulty):
         return self.difficulties[current_difficulty]
     
     def update_score_data(self, current_difficulty):
