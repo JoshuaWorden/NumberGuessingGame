@@ -9,8 +9,8 @@ class DifficultyLevel(Enum):
 class Difficulty:
     def __init__(self, lower_limit, upper_limit):
         self.best_score = None
-        self.total_score = None
-        self.games_played = None
+        self.total_score = 0
+        self.games_played = 0
         self.upper_limit = upper_limit
         self.lower_limit = lower_limit
     
@@ -20,6 +20,12 @@ class Difficulty:
             return 0
         else:
             return round(self.total_score / self.games_played, 2)
+    
+
+    def print_score(self, score):
+        if score == None or score == 0:
+            return "-"
+        return str(score)
         
     def update_total_score(self, current_score):
         self.total_score += current_score
@@ -37,8 +43,6 @@ class Score:
             DifficultyLevel.MEDIUM: Difficulty(1, 1000),
             DifficultyLevel.HARD: Difficulty(1, 10000)
         }
-
-        save_data.load_save_data(self, DifficultyLevel)
 
     # The @property makes the function get treated as a variable when calling
     # For example instead of obj.get_easy(), you can just obj.easy. Much more concise and still very readable
@@ -60,7 +64,7 @@ class Score:
         self.difficulties[current_difficulty].update_total_score(self.current_score)
 
         # If player achieved a high score, update high score and return true
-        if self.current_score < self.difficulties[current_difficulty].best_score:
+        if self.difficulties[current_difficulty].best_score == None or self.current_score < self.difficulties[current_difficulty].best_score:
             self.difficulties[current_difficulty].update_best_score(self.current_score)
             return True
 

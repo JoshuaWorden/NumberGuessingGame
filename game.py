@@ -10,6 +10,8 @@ class Game:
         self.difficulty_data = None
         self.answer = None
 
+        save_data.load_save_data(self.scores, DifficultyLevel)
+
     def select_difficulty(self):
         self.scores.current_score = 0 
 
@@ -111,6 +113,8 @@ class Game:
               "2. High Scores\n"
               "3. Quit")
 
+   
+
         # Get user choice and make sure it's valid
         try:
             choice = int(input())
@@ -130,49 +134,45 @@ class Game:
 
     def print_high_score_screen(self):
         # Width of the columns used for text alignment
-        key_width = 13 # Technically 17, minus the four spaces before column line
-        value_width = 12
+        score_width = 11
+        difficulty_width = 8
 
         # NOTE_TO_SELF: This is hard as shit to read compared to doing it all manually
         #               Although techincally this is much easier to edit and scale differently later on if needed
-        print(
-        f"{'HIGH SCORES'.center(key_width+4 + value_width*3 + 4)}\n\n"
-        f"{'DIFFICULTY'.rjust(key_width)}    |{'EASY'.center(value_width)}|{'MEDIUM'.center(value_width)}|{'HARD'.center(value_width)}|\n"
-        f"{'-'.center(key_width+4, '-')}|{'-'.center(value_width, '-')}|{'-'.center(value_width, '-')}|{'-'.center(value_width, '-')}|\n"
-        f"{'BEST SCORE'.rjust(key_width)}    |{str(self.scores.easy.best_score).center(value_width)}|"
-                          f"{str(self.scores.medium.best_score).center(value_width)}|"
-                          f"{str(self.scores.hard.best_score).center(value_width)}|\n" 
-        f"{'AVERAGE SCORE'.rjust(key_width)}    |{str(self.scores.easy.average_score).center(value_width)}|"
-                          f"{str(self.scores.medium.average_score).center(value_width)}|"
-                          f"{str(self.scores.hard.average_score).center(value_width)}|\n"
-        f"{'GAMES PLAYED'.rjust(key_width)}    |{str(self.scores.easy.games_played).center(value_width)}|"
-                          f"{str(self.scores.medium.games_played).center(value_width)}|"
-                          f"{str(self.scores.hard.games_played).center(value_width)}|\n\n"
-        "0. Back\n"
+        print(f"{'HIGH SCORES'.center(4 + score_width*4)}\n\n"
+        f"{' '.rjust(score_width)}|{'BEST'.center(score_width)}|{'AVERAGE'.center(score_width)}|{'GAMES'.center(score_width)}|\n"
+        f"{'-'.center(score_width, '-')}|{'-'.center(score_width, '-')}|{'-'.center(score_width, '-')}|{'-'.center(score_width, '-')}|")
+        for difficulty in DifficultyLevel: 
+             print(f"{difficulty.name.rjust(difficulty_width)}   |{self.scores.easy.print_score(self.scores.difficulties[difficulty].best_score).center(score_width)}|"
+             f"{self.scores.easy.print_score(self.scores.difficulties[difficulty].average_score).center(score_width)}|"
+             f"{self.scores.easy.print_score(self.scores.difficulties[difficulty].games_played).center(score_width)}|")
+        
+
+        print("\n0. Back\n"
         "1. Reset ALL High Scores\n"
         f"2. Reset EASY High Scores\n"
         f"3. Reset MEDIUM High Scores\n"
         f"4. Reset HARD High Scores")
 
         choice = int(input())
-        self.scores.difficulties.keys
+
         try:
             if choice < 0 or choice > 4:
                 raise ValueError
         except ValueError:
             print("Invalid choice")
             self.print_high_score_screen()
-
+        
         match choice:
             case 0:
                 self.print_main_menu_screen()
             case 1:
                 save_data.reset_save_data(self.scores)
             case 2:
-                save_data.reset_single_difficulty_scores(self.scores, f"{DifficultyLevel.EASY.name}".lower())
+                save_data.reset_single_difficulty_scores(self.scores, DifficultyLevel.EASY.name)
             case 3:
-                save_data.reset_single_difficulty_scores(self.scores, f"{DifficultyLevel.MEDIUM.name}".lower())
+                save_data.reset_single_difficulty_scores(self.scores, DifficultyLevel.MEDIUM.name)
             case 4:
-                save_data.reset_single_difficulty_scores(self.scores, f"{DifficultyLevel.HARD.name}".lower())
+                save_data.reset_single_difficulty_scores(self.scores, DifficultyLevel.HARD.name)
 
         self.print_high_score_screen()
