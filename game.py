@@ -12,23 +12,38 @@ class Game:
 
         save_data.load_save_data(self.scores, DifficultyLevel)
 
-    def select_difficulty(self):
-        self.scores.current_score = 0 
-
+    def game_loop(self):
+        while (True):
+            match self.main_menu():
+                case 1:
+                    self.select_difficulty()
+                    self.player_guessing()
+                case 2:
+                    self.high_scores()
+                case 3:
+                    return
+                
+    def print_select_difficulty_screen(self):
         # Prompt the user to select a difficulty
         print("What difficulty would you like to play on?\n"
         f"1. Easy ({self.scores.easy.lower_limit} - {self.scores.easy.upper_limit})\n" 
         f"2. Medium ({self.scores.medium.lower_limit} - {self.scores.medium.upper_limit})\n" 
         f"3. Hard ({self.scores.hard.lower_limit} - {self.scores.hard.upper_limit})")
+
+    def select_difficulty(self):
+        self.scores.current_score = 0 
         
-        # If user input is valid, apply that difficulty
-        try:
-            self.difficulty = DifficultyLevel(int(input()))
-            self.difficulty_data = self.scores.get_difficulties_obj(self.difficulty)
-        # If user input is invalid, notify user and reprint options
-        except ValueError:
-            print("Invalid choice")
-            self.select_difficulty()
+        while (True):
+            # If user input is valid, apply that difficulty
+            try:
+                self.print_select_difficulty_screen()
+                self.difficulty = DifficultyLevel(int(input()))
+                self.difficulty_data = self.scores.get_difficulties_obj(self.difficulty)
+                break
+            # If user input is invalid, notify user and reprint options
+            except ValueError:
+                print("Invalid choice")
+                
 
         # Determine the number to be guessed by the user
         self.answer = random.randint(self.difficulty_data.lower_limit, 
@@ -39,43 +54,31 @@ class Game:
               f"{self.difficulty_data.lower_limit} and {self.difficulty_data.upper_limit} ({self.answer})")
         print("What number do you think it is?")
 
-        self.player_guessing() 
-
     def player_guessing(self):
-        # Get the guessed number from the user
-        try:
-            guess = int(input())
-        except ValueError:
-            print("You must guess a number")
-            self.player_guessing()
+        while (True):
+            # Get the guessed number from the user
+            try:
+                guess = int(input())
+                if guess < self.difficulty_data.lower_limit or guess > self.difficulty_data.upper_limit:
+                    raise ValueError
+            except ValueError:
+                print(f"You must guess a number between {self.difficulty_data.lower_limit} and {self.difficulty_data.upper_limit}")
+                continue
+            
+            self.scores.current_score += 1
 
-        self.scores.current_score += 1
+            if guess == self.answer:
+                self.win_screen()
+                return
+            
+            # Inform the user of whether the number they need to guess is higher or lower than what they guessed
+            elif guess < self.answer:
+                print("Higher!")
 
-        if guess == self.answer:
-            self.print_win_screen()
-        
-        # Check to see if the users number is within the bounds of the current difficulty of the game
-        elif guess < self.difficulty_data.lower_limit:
-            print(f"The number can't be lower than {self.difficulty_data.lower_limit},"
-                  f" guess a number between {self.difficulty_data.lower_limit}"
-                  f" and {self.difficulty_data.upper_limit}")
+            elif guess > self.answer:
+                print("Lower!")
 
-        elif guess > self.difficulty_data.upper_limit:
-            print(f"The number can't be greater than {self.difficulty_data.upper_limit},"
-                  f" guess a number between {self.difficulty_data.lower_limit}"
-                  f" and {self.difficulty_data.upper_limit}")
-        
-        # Inform the user of whether the number they need to guess is higher or lower than what they guessed
-        elif guess < self.answer:
-
-            print("Higher!")
-
-        elif guess > self.answer:
-            print("Lower!")
-        
-        self.player_guessing()
-
-    def print_win_screen(self):
+    def win_screen(self):
         print("Correct!")
         print(f"It took you {self.scores.current_score} attempts to guess it")
         
@@ -88,49 +91,26 @@ class Game:
 
         save_data.update_save_data(self.scores, self.difficulty)
 
-        print(f"Your current average for {self.difficulty} is"
-              f" {self.difficulty_data.average_score} guesses")
-
-        self.print_play_again_screen()
-
-    def print_play_again_screen(self):
-        print("Would you like to play again? Y / N")
-
-        choice = input()
-
-        if choice == "Y" or choice == "y":
-            self.select_difficulty()
-        elif choice == "N" or choice == "n":
-            self.print_main_menu_screen()
-        else:
-            print("Invalid response\n")
-        self.print_play_again_screen()
+        print("Press any key to return to the main menu")
+        input()
 
     def print_main_menu_screen(self):
-
         print("GUESS THE NUMBER\n"
               "1. Play\n" 
               "2. High Scores\n"
               "3. Quit")
 
-   
-
-        # Get user choice and make sure it's valid
-        try:
-            choice = int(input())
-            if choice < 1 or choice > 3:
-                raise ValueError
-        except ValueError:
-            print("Invalid choice")
-            self.print_main_menu_screen()
-
-        match choice:
-            case 1:
-                self.select_difficulty()
-            case 2:
-                self.print_high_score_screen()
-            case 3:
-                quit()
+    def main_menu(self):
+        while (True):
+            # Get user choice and make sure it's valid
+            try:
+                self.print_main_menu_screen()
+                choice = int(input())
+                if choice < 1 or choice > 3:
+                    raise ValueError
+                return choice
+            except ValueError:
+                print("Invalid choice")
 
     def print_high_score_screen(self):
         # Width of the columns used for text alignment
@@ -154,25 +134,25 @@ class Game:
         f"3. Reset MEDIUM High Scores\n"
         f"4. Reset HARD High Scores")
 
-        choice = int(input())
+    def high_scores(self):
 
-        try:
-            if choice < 0 or choice > 4:
-                raise ValueError
-        except ValueError:
-            print("Invalid choice")
-            self.print_high_score_screen()
-        
-        match choice:
-            case 0:
-                self.print_main_menu_screen()
-            case 1:
-                save_data.reset_save_data(self.scores)
-            case 2:
-                save_data.reset_single_difficulty_scores(self.scores, DifficultyLevel.EASY.name)
-            case 3:
-                save_data.reset_single_difficulty_scores(self.scores, DifficultyLevel.MEDIUM.name)
-            case 4:
-                save_data.reset_single_difficulty_scores(self.scores, DifficultyLevel.HARD.name)
-
-        self.print_high_score_screen()
+        while (True):
+            try:
+                self.print_high_score_screen()
+                choice = int(input())
+                if choice < 0 or choice > 4:
+                    raise ValueError
+            except ValueError:
+                print("Invalid choice")
+            
+            match choice:
+                case 0:
+                    return
+                case 1:
+                    save_data.reset_save_data(self.scores)
+                case 2:
+                    save_data.reset_single_difficulty(self.scores, DifficultyLevel.EASY)
+                case 3:
+                    save_data.reset_single_difficulty(self.scores, DifficultyLevel.MEDIUM)
+                case 4:
+                    save_data.reset_single_difficulty(self.scores, DifficultyLevel.HARD)

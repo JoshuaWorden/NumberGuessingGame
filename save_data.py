@@ -7,24 +7,24 @@ def get_save_data():
 
     return saved_data
 
-def update_save_data(score_obj, current_difficulty):
+def update_save_data(score_obj, difficulty):
     # Make copy of current save data to write to 
     new_save_data = get_save_data()
 
     # Update values in the new_save_data string
-    new_save_data["difficulties"][f"{current_difficulty.name}".lower()]["best_score"] = score_obj.difficulties[current_difficulty].best_score
-    new_save_data["difficulties"][f"{current_difficulty.name}".lower()]["total_score"] = score_obj.difficulties[current_difficulty].total_score
-    new_save_data["difficulties"][f"{current_difficulty.name}".lower()]["games_played"] = score_obj.difficulties[current_difficulty].games_played
+    new_save_data["difficulties"][str(difficulty.name).lower()]["best_score"] = score_obj.difficulties[difficulty].best_score
+    new_save_data["difficulties"][str(difficulty.name).lower()]["total_score"] = score_obj.difficulties[difficulty].total_score
+    new_save_data["difficulties"][str(difficulty.name).lower()]["games_played"] = score_obj.difficulties[difficulty].games_played
     
     overwrite_main_save(score_obj, new_save_data)
 
 def load_save_data(score_obj, difficulty_levels):
-    saved_data = get_save_data()
+    saved_data = get_save_data()  
 
     for difficulty in difficulty_levels:
-        score_obj.difficulties[difficulty].best_score = saved_data["difficulties"][f"{difficulty.name}".lower()]["best_score"]   
-        score_obj.difficulties[difficulty].total_score = saved_data["difficulties"][f"{difficulty.name}".lower()]["total_score"]   
-        score_obj.difficulties[difficulty].games_played = saved_data["difficulties"][f"{difficulty.name}".lower()]["games_played"]
+        score_obj.difficulties[difficulty].best_score = saved_data["difficulties"][str(difficulty.name).lower()]["best_score"]   
+        score_obj.difficulties[difficulty].total_score = saved_data["difficulties"][str(difficulty.name).lower()]["total_score"]   
+        score_obj.difficulties[difficulty].games_played = saved_data["difficulties"][str(difficulty.name).lower()]["games_played"]
 
 def reset_save_data(score_obj):
     with open("save_data_reset.json", "r")as f:
@@ -32,15 +32,15 @@ def reset_save_data(score_obj):
 
     overwrite_main_save(score_obj, new_save_data)
 
-def reset_single_difficulty_scores(score_obj, current_difficulty):
+def reset_single_difficulty(score_obj, difficulty):
     new_save_data = get_save_data()
     with open("save_data_reset.json", "r") as f:
         reset_data = json.load(f)
 
     # Assign reset values from save_data_reset.json to new_save_data
-    new_save_data["difficulties"][current_difficulty]["best_score"] = reset_data["difficulties"][current_difficulty]["best_score"]
-    new_save_data["difficulties"][current_difficulty]["total_score"] = reset_data["difficulties"][current_difficulty]["total_score"]
-    new_save_data["difficulties"][current_difficulty]["games_played"] = reset_data["difficulties"][current_difficulty]["games_played"]
+    new_save_data["difficulties"][str(difficulty.name).lower()]["best_score"] = reset_data["difficulties"][str(difficulty.name).lower()]["best_score"]
+    new_save_data["difficulties"][str(difficulty.name).lower()]["total_score"] = reset_data["difficulties"][str(difficulty.name).lower()]["total_score"]
+    new_save_data["difficulties"][str(difficulty.name).lower()]["games_played"] = reset_data["difficulties"][str(difficulty.name).lower()]["games_played"]
 
     overwrite_main_save(score_obj, new_save_data)
 

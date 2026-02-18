@@ -3,7 +3,7 @@ import json
 
 def main():
     game = Game()
-    game.print_main_menu_screen()    
+    game.game_loop()    
 
 if __name__ == "__main__":
     main()
