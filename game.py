@@ -10,7 +10,7 @@ class Game:
         self.difficulty_data = None
         self.answer = None
 
-        save_data.load_save_data(self.scores, DifficultyLevel)
+        save_data.load_save_data(self.scores)
 
     def game_loop(self):
         while (True):
@@ -85,7 +85,7 @@ class Game:
         # Update the score for the difficulty, and if the player achieved a high score, inform the user
         if self.scores.update_score_data(self.difficulty):
             print(f"Congratulations! "
-                  f"{self.difficulty_data.best_score} is now your new best score on {self.difficulty}!")
+                  f"{self.difficulty_data.best_score} is now your new best score on {self.difficulty.name}!")
         else:
             print(f"Your current best is {self.difficulty_data.best_score}")
 
@@ -149,10 +149,13 @@ class Game:
                 case 0:
                     return
                 case 1:
-                    save_data.reset_save_data(self.scores)
+                    save_data.overwrite_save_data(save_data.DEFAULT_SAVE_DATA)
                 case 2:
-                    save_data.reset_single_difficulty(self.scores, DifficultyLevel.EASY)
+                    save_data.reset_single_difficulty(DifficultyLevel.EASY.name.lower())
                 case 3:
-                    save_data.reset_single_difficulty(self.scores, DifficultyLevel.MEDIUM)
+                    save_data.reset_single_difficulty(DifficultyLevel.MEDIUM.name.lower())
                 case 4:
-                    save_data.reset_single_difficulty(self.scores, DifficultyLevel.HARD)
+                    save_data.reset_single_difficulty(DifficultyLevel.HARD.name.lower())
+
+            # This will execute only if one of the reset options is selected
+            save_data.load_save_data(self.scores)

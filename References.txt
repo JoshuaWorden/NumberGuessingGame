@@ -1,0 +1,11 @@
+JSON
+https://www.w3schools.com/python/python_json.asp 
+
+JSON Documentation
+https://docs.python.org/3/library/json.html
+
+os.replace()
+https://docs.python.org/3/library/os.html#os.replace
+
+@property
+https://www.freecodecamp.org/news/python-property-decorator/ 
