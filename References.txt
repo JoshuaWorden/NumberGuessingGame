@@ -9,3 +9,6 @@ https://docs.python.org/3/library/os.html#os.replace
 
 @property
 https://www.freecodecamp.org/news/python-property-decorator/ 
+
+type hints
+https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html 

@@ -1,6 +1,11 @@
+from typing import TYPE_CHECKING
 import json
 import os
 import copy
+
+# Avoid circular dependencies while maintaining autocomplete/type hint features
+if TYPE_CHECKING:
+    from score import DifficultyLevel, Score
 
 # Not ideal but fine for this project, if large store somewhere else
 DEFAULT_SAVE_DATA = {
@@ -23,7 +28,7 @@ DEFAULT_SAVE_DATA = {
   }
 }
 
-def get_save_data():
+def get_save_data() -> dict:
     # Make sure the file exists
     if not os.path.exists("save_data.json"):
         # If no file exists, create one using DEFAULT_SAVE_DATA
@@ -49,34 +54,37 @@ def get_save_data():
         overwrite_save_data(DEFAULT_SAVE_DATA)
         print("WARNING: save_data.json was corrupted. File recreated with all data being reset.")
         return copy.deepcopy(DEFAULT_SAVE_DATA)   
-
-def update_save_data(score_obj, difficulty):
-    new_save_data = get_save_data()
-
-    new_save_data["difficulties"][str(difficulty.name).lower()]["best_score"] = score_obj.difficulties[difficulty].best_score
-    new_save_data["difficulties"][str(difficulty.name).lower()]["total_score"] = score_obj.difficulties[difficulty].total_score
-    new_save_data["difficulties"][str(difficulty.name).lower()]["games_played"] = score_obj.difficulties[difficulty].games_played
     
+def difficulty_path(save_data: dict, difficulty: DifficultyLevel) -> dict:
+    return save_data["difficulties"][str(difficulty.name).lower()]
+
+def update_save_data(score_obj: Score, difficulty: DifficultyLevel) -> None:
+    # Create shortcut for current difficulty in json file
+    new_save_data = get_save_data()
+    difficulty_data = difficulty_path(new_save_data, difficulty)
+
+    for key in difficulty_data:
+        difficulty_data[key] = getattr(score_obj.difficulties[difficulty], key)
+
     overwrite_save_data(new_save_data)
 
-def load_save_data(score_obj):
+def load_save_data(score_obj: Score) -> None:
     save_data = get_save_data()  
 
     for difficulty in score_obj.difficulties.keys():
-        score_obj.difficulties[difficulty].best_score = save_data["difficulties"][str(difficulty.name).lower()]["best_score"]   
-        score_obj.difficulties[difficulty].total_score = save_data["difficulties"][str(difficulty.name).lower()]["total_score"]   
-        score_obj.difficulties[difficulty].games_played = save_data["difficulties"][str(difficulty.name).lower()]["games_played"]    
+        difficulty_data = difficulty_path(save_data, difficulty)
+        for key in difficulty_data:
+            setattr(score_obj.difficulties[difficulty], key, difficulty_data[key])
 
-def reset_single_difficulty(difficulty):
+def reset_single_difficulty(difficulty: DifficultyLevel) -> None:
     new_save_data = get_save_data()
-
-    new_save_data["difficulties"][difficulty]["best_score"] = DEFAULT_SAVE_DATA["difficulties"][difficulty]["best_score"]
-    new_save_data["difficulties"][difficulty]["total_score"] = DEFAULT_SAVE_DATA["difficulties"][difficulty]["total_score"]
-    new_save_data["difficulties"][difficulty]["games_played"] = DEFAULT_SAVE_DATA["difficulties"][difficulty]["games_played"]
+    difficulty_data = difficulty_path(new_save_data, difficulty)
+    difficulty_data.clear()
+    difficulty_data.update(copy.deepcopy(DEFAULT_SAVE_DATA["difficulties"][str(difficulty.name).lower()]))
 
     overwrite_save_data(new_save_data)
 
-def overwrite_save_data(new_save_data):
+def overwrite_save_data(new_save_data: dict = DEFAULT_SAVE_DATA) -> None:
     # Write the string to a temp_save_data file which will be created as it does not exist yet
     with open("temp_save_data.json", "w") as f:
         json.dump(new_save_data, f, indent = 2)
@@ -94,7 +102,7 @@ def overwrite_save_data(new_save_data):
     # Then once new data has been written, rename file to overwrite main file (this is the atomic operation)
 
 # Ensures all the required keys are present in the save file, uses node-left-right traversal
-def validate_file_keys(save_data, default_data, parent_key = None):
+def validate_file_keys(save_data: dict, default_data: dict, parent_key: str = None) -> bool:
     key_restored = False
     # Use/get the DEFAULT_SAVE_DATA to check if keys exist in main save file
     for key, value in default_data.items():
@@ -126,7 +134,7 @@ def validate_file_keys(save_data, default_data, parent_key = None):
     return key_restored
 
 # Delete any unwanted keys. Recurses through dict starting from leaf nodes, node-left-right traversal
-def delete_unwanted_keys(save_data: dict, default_data: dict, parent_key: list = []):
+def delete_unwanted_keys(save_data: dict, default_data: dict, parent_key: list = []) -> bool:
     key_deleted = False
 
     # Important: Converting save_data.items() to a list allows us to alter the dicts size/structure during iteration
