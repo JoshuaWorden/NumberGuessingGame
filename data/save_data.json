@@ -1,0 +1,19 @@
+{
+  "difficulties": {
+    "easy": {
+      "best_score": 0,
+      "total_score": 0,
+      "games_played": 0
+    },
+    "medium": {
+      "best_score": 1,
+      "total_score": 1,
+      "games_played": 1
+    },
+    "hard": {
+      "best_score": 0,
+      "total_score": 0,
+      "games_played": 0
+    }
+  }
+}

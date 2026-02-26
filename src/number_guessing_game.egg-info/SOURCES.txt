@@ -1,0 +1,9 @@
+pyproject.toml
+src/number_guessing_game/game.py
+src/number_guessing_game/main.py
+src/number_guessing_game/save_data.py
+src/number_guessing_game/score.py
+src/number_guessing_game.egg-info/PKG-INFO
+src/number_guessing_game.egg-info/SOURCES.txt
+src/number_guessing_game.egg-info/dependency_links.txt
+src/number_guessing_game.egg-info/top_level.txt

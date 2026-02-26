@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "number_guessing_game"
+version = "0.1.0"
+description = "A simple number guessing game"
+authors = [
+  { name="Josh" }
+]
+requires-python = ">=3.8"
+
+[tool.setuptools.packages.find]
+where = ["src"]
